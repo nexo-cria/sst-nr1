@@ -43,9 +43,13 @@ export default function TopBar({ onMenuClick, title }: TopBarProps) {
         </button>
 
         {/* User Avatar */}
-        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold text-sm">
-          {user?.avatar || user?.name?.charAt(0) || 'U'}
-        </div>
+        {user?.avatar && user.avatar.startsWith('data:') ? (
+          <img src={user.avatar} alt={user.name} className="w-9 h-9 rounded-full object-cover" />
+        ) : (
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold text-sm">
+            {user?.avatar || user?.name?.charAt(0) || 'U'}
+          </div>
+        )}
       </div>
     </header>
   );

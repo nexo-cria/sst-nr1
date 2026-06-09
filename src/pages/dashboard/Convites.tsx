@@ -18,7 +18,7 @@ export default function Convites() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    name: '', email: '', cpf: '', role: '', department: '', admissionDate: '',
+    name: '', email: '', cpf: '', role: '', department: '', admissionDate: '', birthDate: '', phone: '',
   });
 
   const reload = async () => setInvites(await db.getInvitesByCompany(companyId));
@@ -48,6 +48,8 @@ export default function Convites() {
       role: formData.role,
       department: formData.department,
       admissionDate: formData.admissionDate,
+      birthDate: formData.birthDate,
+      phone: formData.phone,
       token,
       status: 'pending',
       facePhoto: '',
@@ -58,7 +60,7 @@ export default function Convites() {
     });
 
     setShowModal(false);
-    setFormData({ name: '', email: '', cpf: '', role: '', department: '', admissionDate: '' });
+    setFormData({ name: '', email: '', cpf: '', role: '', department: '', admissionDate: '', birthDate: '', phone: '' });
     setSuccessMsg(`Convite gerado para ${formData.name}! Copie e envie o link.`);
     await reload();
     setTimeout(() => setSuccessMsg(''), 8000);
@@ -362,6 +364,25 @@ export default function Convites() {
                     value={formData.admissionDate}
                     onChange={(e) => setFormData({ ...formData, admissionDate: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Data de Nascimento</label>
+                  <input
+                    type="date"
+                    value={formData.birthDate}
+                    onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Telefone</label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none"
+                    placeholder="(11) 99999-9999"
                   />
                 </div>
               </div>

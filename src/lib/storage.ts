@@ -44,7 +44,7 @@ export interface StoredCheckin {
 }
 export interface StoredInvite {
   id: string; companyId: string; createdBy: string; name: string; email: string;
-  cpf: string; role: string; department: string; admissionDate: string;
+  cpf: string; role: string; department: string; admissionDate: string; birthDate: string; phone: string;
   token: string; status: 'pending' | 'accepted' | 'expired' | 'cancelled';
   facePhoto: string; faceVerified: boolean; faceCapturedAt: string;
   acceptedAt: string; expiresAt: string; createdAt: string;
@@ -85,7 +85,7 @@ const mt = (r: any): StoredTraining => ({ id: r.id, companyId: r.company_id, tit
 const mepi = (r: any): StoredEPI => ({ id: r.id, companyId: r.company_id, employeeId: r.employee_id, employeeName: r.employee_name||'', name: r.name, ca: r.ca, quantity: r.quantity, deliveryDate: r.delivery_date, expiresAt: r.expires_at, status: r.status });
 const mck = (r: any): StoredCheckin => ({ id: r.id, date: r.date, time: r.time, employeeId: r.employee_id, employeeName: r.employee_name||'', companyId: r.company_id, responses: r.responses||[], status: r.status, alertCount: r.alert_count, createdAt: r.created_at });
 const mp = (r: any): StoredUser => ({ id: r.id, email: r.email, password: '', name: r.name, role: r.role as UserRole, avatar: r.avatar||'', companyId: r.company_id, companyName: r.company_name||'', isActive: r.is_active, createdAt: r.created_at, createdBy: r.created_by });
-const mi = (r: any): StoredInvite => ({ id: r.id, companyId: r.company_id, createdBy: r.created_by, name: r.name, email: r.email, cpf: r.cpf||'', role: r.role||'', department: r.department||'', admissionDate: r.admission_date||'', token: r.token, status: r.status, facePhoto: r.face_photo||'', faceVerified: r.face_verified||false, faceCapturedAt: r.face_captured_at||'', acceptedAt: r.accepted_at||'', expiresAt: r.expires_at, createdAt: r.created_at });
+const mi = (r: any): StoredInvite => ({ id: r.id, companyId: r.company_id, createdBy: r.created_by, name: r.name, email: r.email, cpf: r.cpf||'', role: r.role||'', department: r.department||'', admissionDate: r.admission_date||'', birthDate: r.birth_date||'', phone: r.phone||'', token: r.token, status: r.status, facePhoto: r.face_photo||'', faceVerified: r.face_verified||false, faceCapturedAt: r.face_captured_at||'', acceptedAt: r.accepted_at||'', expiresAt: r.expires_at, createdAt: r.created_at });
 
 // ===== HELPERS =====
 // Tenta Supabase para SELECT, se falhar ou vier vazio, usa localStorage

@@ -120,7 +120,7 @@ export default function CadastroConvite() {
         password,
         name: formData.name,
         role: 'colaborador',
-        avatar: formData.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase(),
+        avatar: facePhoto || formData.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase(),
         companyId: invite.companyId,
         companyName: '',
         isActive: true,
@@ -145,8 +145,8 @@ export default function CadastroConvite() {
         role: invite.role || 'Colaborador',
         department: invite.department || 'Geral',
         admissionDate: invite.admissionDate || new Date().toISOString().split('T')[0],
-        birthDate: '',
-        phone: formData.phone,
+        birthDate: invite.birthDate || '',
+        phone: invite.phone || formData.phone,
         isActive: true,
       });
 

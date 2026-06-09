@@ -143,9 +143,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           {/* User Info */}
           <div className="px-4 py-4 border-b border-slate-100">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold text-sm">
-                {user?.avatar || user?.name?.charAt(0) || 'U'}
-              </div>
+              {user?.avatar && user.avatar.startsWith('data:') ? (
+                <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold text-sm">
+                  {user?.avatar || user?.name?.charAt(0) || 'U'}
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-slate-900 truncate">
                   {user?.name}

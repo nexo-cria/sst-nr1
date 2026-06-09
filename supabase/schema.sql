@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS daily_checkins (
 -- 8) CONVITES
 CREATE TABLE IF NOT EXISTS invites (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  company_id UUID REFERENCES companies(id) ON DELETE SET NULL,
   created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
   name TEXT NOT NULL,
   email TEXT NOT NULL,

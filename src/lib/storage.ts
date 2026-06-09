@@ -109,17 +109,20 @@ async function sbOrLocal<T>(table: string, localKey: string, mapper: (r: any) =>
 async function insertFallback<T extends { id: string }>(table: string, localKey: string, sbData: any, mapper: (r: any) => T, localItem: T): Promise<T> {
   if (isSB()) {
     try {
+      console.log('[insertFallback] inserting into', table, sbData);
       const { data, error } = await supabase.from(table).insert(sbData).select().single();
+      if (error) { console.error('[insertFallback] Supabase error:', error.message, error.details, error.hint); }
       if (!error && data) {
         const mapped = mapper(data);
-        // Adicionar ao cache local também
+        console.log('[insertFallback] Supabase success:', mapped);
         const list = lGet<T[]>(localKey) || [];
         list.unshift(mapped);
         lSet(localKey, list);
         return mapped;
       }
-    } catch (e) { /* fallback */ }
+    } catch (e) { console.error('[insertFallback] exception:', e); }
   }
+  console.log('[insertFallback] falling back to localStorage for', table);
   const list = lGet<T[]>(localKey) || [];
   list.unshift(localItem);
   lSet(localKey, list);
@@ -462,9 +465,10 @@ export const db = {
   async getInviteByToken(token: string): Promise<StoredInvite | null> {
     if (isSB()) {
       try {
-        const { data } = await supabase.from('invites').select('*').eq('token', token).single();
+        const { data, error } = await supabase.from('invites').select('*').eq('token', token).single();
+        if (error) console.error('[Supabase getInviteByToken] error:', error.message);
         if (data) return mi(data);
-      } catch {}
+      } catch (e) { console.error('[getInviteByToken] exception:', e); }
     }
     return (lGet<StoredInvite[]>(K.invites) || []).find(i => i.token === token) || null;
   },
@@ -477,7 +481,10 @@ export const db = {
       token: data.token, status: data.status, face_photo: data.facePhoto, face_verified: data.faceVerified,
       face_captured_at: data.faceCapturedAt || null, accepted_at: data.acceptedAt || null, expires_at: data.expiresAt,
     };
-    return insertFallback('invites', K.invites, sbData, mi, localItem);
+    console.log('[createInvite] isSB:', isSB(), 'sbData:', sbData);
+    const result = await insertFallback('invites', K.invites, sbData, mi, localItem);
+    console.log('[createInvite] result:', result);
+    return result;
   },
 
   async updateInvite(id: string, updates: Partial<StoredInvite>): Promise<StoredInvite | null> {

@@ -198,5 +198,7 @@ CREATE POLICY "allow_all_checkins" ON daily_checkins FOR ALL TO authenticated US
 ALTER TABLE invites ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "allow_all_invites" ON invites;
 CREATE POLICY "allow_all_invites" ON invites FOR ALL TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "allow_anon_insert_invites" ON invites;
+CREATE POLICY "allow_anon_insert_invites" ON invites FOR INSERT TO anon WITH CHECK (true);
 DROP POLICY IF EXISTS "allow_public_read_invites" ON invites;
 CREATE POLICY "allow_public_read_invites" ON invites FOR SELECT USING (true);

@@ -9,18 +9,35 @@ import FaceCapture from '../components/FaceCapture';
 type Step = 'loading' | 'expired' | 'not-found' | 'form' | 'photo' | 'success';
 
 function getTokenFromHash(): string {
+  // Tenta da hash (HashRouter: #/cadastro?token=xxx)
   const hash = window.location.hash || '';
   const qIdx = hash.indexOf('?');
-  if (qIdx === -1) return '';
-  const params = new URLSearchParams(hash.substring(qIdx));
-  return params.get('token') || '';
+  if (qIdx !== -1) {
+    const params = new URLSearchParams(hash.substring(qIdx));
+    const t = params.get('token');
+    if (t) return t;
+  }
+  // Fallback: tenta da query string normal (?token=xxx)
+  const search = window.location.search || '';
+  if (search) {
+    const params = new URLSearchParams(search);
+    const t = params.get('token');
+    if (t) return t;
+  }
+  // Fallback: tenta extrair token do path inteiro (caso WhatsApp tenha reformulado a URL)
+  const full = window.location.href;
+  const tokenMatch = full.match(/token=([^&]+)/);
+  if (tokenMatch) return tokenMatch[1];
+  return '';
 }
 
 export default function CadastroConvite() {
   const [token, setToken] = useState('');
 
   useEffect(() => {
-    setToken(getTokenFromHash());
+    const t = getTokenFromHash();
+    console.log('[CadastroConvite] token from URL:', t, 'full URL:', window.location.href, 'hash:', window.location.hash);
+    setToken(t);
   }, []);
 
   const [step, setStep] = useState<Step>('loading');
@@ -38,11 +55,14 @@ export default function CadastroConvite() {
 
   useEffect(() => {
     if (!token) {
+      console.log('[CadastroConvite] no token, showing not-found');
       setStep('not-found');
       return;
     }
     (async () => {
+      console.log('[CadastroConvite] looking up token:', token);
       const inv = await db.getInviteByToken(token);
+      console.log('[CadastroConvite] invite result:', inv);
       if (!inv) {
         setStep('not-found');
         return;

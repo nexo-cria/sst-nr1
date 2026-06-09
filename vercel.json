@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/cadastro", "destination": "/index.html" },
+    { "source": "/cadastro/:match*", "destination": "/index.html" }
+  ]
+}

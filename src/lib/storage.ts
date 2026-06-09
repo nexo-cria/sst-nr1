@@ -321,11 +321,14 @@ export const db = {
   async getEmployeesByCompany(companyId: string): Promise<StoredEmployee[]> {
     if (isSB()) {
       try {
-        const { data } = await supabase.from('employees').select('*').eq('company_id', companyId).order('name' as any);
+        let query = supabase.from('employees').select('*');
+        if (companyId) query = query.eq('company_id', companyId);
+        const { data } = await query.order('name' as any);
         if (data && data.length > 0) { const m = data.map(me); lSet(K.employees, m); return m; }
       } catch {}
     }
-    return (lGet<StoredEmployee[]>(K.employees) || []).filter(e => e.companyId === companyId);
+    if (companyId) return (lGet<StoredEmployee[]>(K.employees) || []).filter(e => e.companyId === companyId);
+    return lGet<StoredEmployee[]>(K.employees) || [];
   },
 
   async getEmployeeByUserId(userId: string): Promise<StoredEmployee | null> {
@@ -380,9 +383,15 @@ export const db = {
   // -------- DOCUMENTS --------
   async getDocumentsByCompany(companyId: string): Promise<StoredDocument[]> {
     if (isSB()) {
-      try { const { data } = await supabase.from('documents').select('*').eq('company_id', companyId).order('created_at', { ascending: false } as any); if (data && data.length > 0) { const m = data.map(md); lSet(K.documents, m); return m; } } catch {}
+      try {
+        let query = supabase.from('documents').select('*');
+        if (companyId) query = query.eq('company_id', companyId);
+        const { data } = await query.order('created_at', { ascending: false } as any);
+        if (data && data.length > 0) { const m = data.map(md); lSet(K.documents, m); return m; }
+      } catch {}
     }
-    return (lGet<StoredDocument[]>(K.documents) || []).filter(d => d.companyId === companyId);
+    if (companyId) return (lGet<StoredDocument[]>(K.documents) || []).filter(d => d.companyId === companyId);
+    return lGet<StoredDocument[]>(K.documents) || [];
   },
   async createDocument(data: Omit<StoredDocument, 'id' | 'createdAt'>): Promise<StoredDocument> {
     const localItem: StoredDocument = { ...data, id: gid(), createdAt: new Date().toISOString() };
@@ -397,8 +406,16 @@ export const db = {
 
   // -------- TRAININGS --------
   async getTrainingsByCompany(companyId: string): Promise<StoredTraining[]> {
-    if (isSB()) { try { const { data } = await supabase.from('trainings').select('*').eq('company_id', companyId).order('date', { ascending: false } as any); if (data && data.length > 0) { const m = data.map(mt); lSet(K.trainings, m); return m; } } catch {} }
-    return (lGet<StoredTraining[]>(K.trainings) || []).filter(t => t.companyId === companyId);
+    if (isSB()) {
+      try {
+        let query = supabase.from('trainings').select('*');
+        if (companyId) query = query.eq('company_id', companyId);
+        const { data } = await query.order('date', { ascending: false } as any);
+        if (data && data.length > 0) { const m = data.map(mt); lSet(K.trainings, m); return m; }
+      } catch {}
+    }
+    if (companyId) return (lGet<StoredTraining[]>(K.trainings) || []).filter(t => t.companyId === companyId);
+    return lGet<StoredTraining[]>(K.trainings) || [];
   },
   async createTraining(data: Omit<StoredTraining, 'id'>): Promise<StoredTraining> {
     const localItem: StoredTraining = { ...data, id: gid() };
@@ -413,8 +430,16 @@ export const db = {
 
   // -------- EPIS --------
   async getEPIsByCompany(companyId: string): Promise<StoredEPI[]> {
-    if (isSB()) { try { const { data } = await supabase.from('epis').select('*').eq('company_id', companyId).order('created_at', { ascending: false } as any); if (data && data.length > 0) { const m = data.map(mepi); lSet(K.epis, m); return m; } } catch {} }
-    return (lGet<StoredEPI[]>(K.epis) || []).filter(e => e.companyId === companyId);
+    if (isSB()) {
+      try {
+        let query = supabase.from('epis').select('*');
+        if (companyId) query = query.eq('company_id', companyId);
+        const { data } = await query.order('created_at', { ascending: false } as any);
+        if (data && data.length > 0) { const m = data.map(mepi); lSet(K.epis, m); return m; }
+      } catch {}
+    }
+    if (companyId) return (lGet<StoredEPI[]>(K.epis) || []).filter(e => e.companyId === companyId);
+    return lGet<StoredEPI[]>(K.epis) || [];
   },
   async getEPIsByEmployee(employeeId: string): Promise<StoredEPI[]> {
     if (isSB()) { try { const { data } = await supabase.from('epis').select('*').eq('employee_id', employeeId); if (data && data.length > 0) return data.map(mepi); } catch {} }

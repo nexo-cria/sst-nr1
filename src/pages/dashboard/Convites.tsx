@@ -30,8 +30,8 @@ export default function Convites() {
   );
 
   const getInviteLink = (token: string) => {
-    const base = window.location.origin + window.location.pathname;
-    return `${base}#/cadastro?token=${token}`;
+    const base = window.location.origin;
+    return `${base}/cadastro?token=${token}`;
   };
 
   const handleCreateInvite = async (e: React.FormEvent) => {

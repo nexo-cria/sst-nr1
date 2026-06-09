@@ -10,6 +10,17 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Redirect: se ?token=xxx veio na URL normal (ex: WhatsApp cortou o #),
+      // redireciona para #/cadastro?token=xxx
+      (function() {
+        var params = new URLSearchParams(window.location.search);
+        var token = params.get('token');
+        if (token && !window.location.hash.includes('cadastro')) {
+          window.location.replace(window.location.pathname + '#/cadastro?token=' + token);
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

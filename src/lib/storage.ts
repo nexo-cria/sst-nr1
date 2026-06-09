@@ -457,11 +457,19 @@ export const db = {
   async getInvitesByCompany(companyId: string): Promise<StoredInvite[]> {
     if (isSB()) {
       try {
-        const { data } = await supabase.from('invites').select('*').eq('company_id', companyId).order('created_at', { ascending: false } as any);
+        let query = supabase.from('invites').select('*');
+        if (companyId) {
+          query = query.eq('company_id', companyId);
+        }
+        const { data, error } = await query.order('created_at', { ascending: false } as any);
+        if (error) console.error('[getInvitesByCompany] error:', error.message);
         if (data && data.length > 0) { const m = data.map(mi); lSet(K.invites, m); return m; }
-      } catch {}
+      } catch (e) { console.error('[getInvitesByCompany] exception:', e); }
     }
-    return (lGet<StoredInvite[]>(K.invites) || []).filter(i => i.companyId === companyId);
+    if (companyId) {
+      return (lGet<StoredInvite[]>(K.invites) || []).filter(i => i.companyId === companyId);
+    }
+    return lGet<StoredInvite[]>(K.invites) || [];
   },
 
   async getInviteByToken(token: string): Promise<StoredInvite | null> {

@@ -230,24 +230,26 @@ export const db = {
     if (isSB()) {
       try {
         const s = lGet<{ email?: string }>(K.session);
-        const { data: authData } = await supabase.auth.signUp({
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
           email: data.email, password: data.password,
           options: { data: { name: data.name, role: data.role } },
         });
+        if (signUpError) console.error('[createUser] signUp error:', signUpError.message);
         if (authData?.user) {
+          // Usa session para garantir que o admin continua logado
           await supabase.from('profiles').update({
             company_id: data.companyId, company_name: data.companyName,
             avatar: data.avatar, created_by: data.createdBy, role: data.role,
           } as never).eq('id', authData.user.id);
         }
-        // Se perdeu sessão, tenta restaurar
+        // Restaura sessão do admin
         if (s?.email && s.email !== data.email) {
           try {
             const u = lGet<StoredUser[]>(K.users)?.find(x => x.email === s.email);
             if (u) await supabase.auth.signInWithPassword({ email: u.email, password: u.password });
           } catch {}
         }
-      } catch {}
+      } catch (e) { console.error('[createUser] supabase exception:', e); }
     }
     return { user: newUser, error: null };
   },
@@ -476,15 +478,38 @@ export const db = {
   async createInvite(data: Omit<StoredInvite, 'id' | 'createdAt'>): Promise<StoredInvite> {
     const localItem: StoredInvite = { ...data, id: gid(), createdAt: new Date().toISOString() };
     const sbData = {
-      company_id: data.companyId, created_by: data.createdBy, name: data.name, email: data.email,
+      company_id: data.companyId || null, created_by: data.createdBy, name: data.name, email: data.email,
       cpf: data.cpf, role: data.role, department: data.department, admission_date: data.admissionDate || null,
       token: data.token, status: data.status, face_photo: data.facePhoto, face_verified: data.faceVerified,
       face_captured_at: data.faceCapturedAt || null, accepted_at: data.acceptedAt || null, expires_at: data.expiresAt,
     };
-    console.log('[createInvite] isSB:', isSB(), 'sbData:', sbData);
-    const result = await insertFallback('invites', K.invites, sbData, mi, localItem);
-    console.log('[createInvite] result:', result);
-    return result;
+
+    // Tenta Supabase PRIMEIRO — se falhar, loga erro mas salva local
+    if (isSB()) {
+      try {
+        console.log('[createInvite] Inserting into Supabase:', sbData);
+        const { data: inserted, error } = await supabase.from('invites').insert(sbData).select().single();
+        if (error) {
+          console.error('[createInvite] Supabase INSERT error:', error.message, error.details, error.hint);
+        } else if (inserted) {
+          console.log('[createInvite] Supabase INSERT success:', inserted);
+          const mapped = mi(inserted);
+          // Salvar local também para cache
+          const list = lGet<StoredInvite[]>(K.invites) || [];
+          list.unshift(mapped);
+          lSet(K.invites, list);
+          return mapped;
+        }
+      } catch (e) {
+        console.error('[createInvite] Supabase exception:', e);
+      }
+    }
+
+    console.warn('[createInvite] FALLBACK to localStorage — convite NÃO está no Supabase!');
+    const list = lGet<StoredInvite[]>(K.invites) || [];
+    list.unshift(localItem);
+    lSet(K.invites, list);
+    return localItem;
   },
 
   async updateInvite(id: string, updates: Partial<StoredInvite>): Promise<StoredInvite | null> {

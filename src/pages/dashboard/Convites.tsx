@@ -39,7 +39,7 @@ export default function Convites() {
     const token = crypto.randomUUID().replace(/-/g, '').substring(0, 24);
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-    await db.createInvite({
+    const result = await db.createInvite({
       companyId,
       createdBy: user?.id || '',
       name: formData.name,

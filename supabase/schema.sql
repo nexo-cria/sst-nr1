@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS profiles (
 -- 3) FUNCIONÁRIOS
 CREATE TABLE IF NOT EXISTS employees (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  company_id UUID REFERENCES companies(id) ON DELETE SET NULL,
   user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   name TEXT NOT NULL,
   email TEXT NOT NULL,
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS employees (
 -- 4) DOCUMENTOS
 CREATE TABLE IF NOT EXISTS documents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  company_id UUID REFERENCES companies(id) ON DELETE SET NULL,
   employee_id UUID REFERENCES employees(id) ON DELETE SET NULL,
   type TEXT NOT NULL,
   title TEXT NOT NULL,
@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS documents (
 -- 5) TREINAMENTOS
 CREATE TABLE IF NOT EXISTS trainings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  company_id UUID REFERENCES companies(id) ON DELETE SET NULL,
   title TEXT NOT NULL,
   description TEXT DEFAULT '',
   type TEXT NOT NULL,
@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS trainings (
 -- 6) EPIs
 CREATE TABLE IF NOT EXISTS epis (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  company_id UUID REFERENCES companies(id) ON DELETE SET NULL,
   employee_id UUID NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
   employee_name TEXT DEFAULT '',
   name TEXT NOT NULL,
@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS epis (
 -- 7) CHECK-INS DIÁRIOS
 CREATE TABLE IF NOT EXISTS daily_checkins (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  company_id UUID REFERENCES companies(id) ON DELETE SET NULL,
   employee_id UUID NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
   employee_name TEXT DEFAULT '',
   date DATE NOT NULL,
@@ -162,37 +162,37 @@ CREATE TRIGGER on_auth_user_created
 -- Companies
 ALTER TABLE companies ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "allow_all_companies" ON companies;
-CREATE POLICY "allow_all_companies" ON companies FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_companies" ON companies FOR ALL USING (true) WITH CHECK (true);
 
 -- Profiles
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "allow_all_profiles" ON profiles;
-CREATE POLICY "allow_all_profiles" ON profiles FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_profiles" ON profiles FOR ALL USING (true) WITH CHECK (true);
 
 -- Employees
 ALTER TABLE employees ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "allow_all_employees" ON employees;
-CREATE POLICY "allow_all_employees" ON employees FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_employees" ON employees FOR ALL USING (true) WITH CHECK (true);
 
 -- Documents
 ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "allow_all_documents" ON documents;
-CREATE POLICY "allow_all_documents" ON documents FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_documents" ON documents FOR ALL USING (true) WITH CHECK (true);
 
 -- Trainings
 ALTER TABLE trainings ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "allow_all_trainings" ON trainings;
-CREATE POLICY "allow_all_trainings" ON trainings FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_trainings" ON trainings FOR ALL USING (true) WITH CHECK (true);
 
 -- EPIs
 ALTER TABLE epis ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "allow_all_epis" ON epis;
-CREATE POLICY "allow_all_epis" ON epis FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_epis" ON epis FOR ALL USING (true) WITH CHECK (true);
 
 -- Check-ins
 ALTER TABLE daily_checkins ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "allow_all_checkins" ON daily_checkins;
-CREATE POLICY "allow_all_checkins" ON daily_checkins FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_checkins" ON daily_checkins FOR ALL USING (true) WITH CHECK (true);
 
 -- Invites (policy aberta para permitir cadastro via link público)
 ALTER TABLE invites ENABLE ROW LEVEL SECURITY;

@@ -41,7 +41,7 @@ export default function GestaoCheckins() {
   };
 
   useEffect(() => {
-    if (companyId) loadData();
+    loadData();
   }, [companyId]);
 
   // Filter

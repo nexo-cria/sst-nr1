@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
+import MobileBottomNav from './MobileBottomNav';
 
 const pageTitles: Record<string, string> = {
   '/dashboard': 'Dashboard',
@@ -37,10 +38,12 @@ export default function DashboardLayout() {
       <div className="lg:ml-64">
         <TopBar onMenuClick={() => setSidebarOpen(true)} title={title} />
 
-        <main className="p-4 lg:p-6">
+        <main className="p-4 lg:p-6 pb-24 lg:pb-6">
           <Outlet />
         </main>
       </div>
+
+      <MobileBottomNav />
     </div>
   );
 }

@@ -26,7 +26,7 @@ export default function RHDashboard() {
   };
 
   useEffect(() => {
-    if (companyId) loadData();
+    loadData();
   }, [companyId]);
 
   return (

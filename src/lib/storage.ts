@@ -433,8 +433,17 @@ export const db = {
 
   // -------- CHECKINS --------
   async getCheckinsByCompany(companyId: string): Promise<StoredCheckin[]> {
-    if (isSB()) { try { const { data } = await supabase.from('daily_checkins').select('*').eq('company_id', companyId).order('created_at', { ascending: false } as any); if (data && data.length > 0) { const m = data.map(mck); lSet(K.checkins, m); return m; } } catch {} }
-    return (lGet<StoredCheckin[]>(K.checkins) || []).filter(c => c.companyId === companyId);
+    if (isSB()) {
+      try {
+        let query = supabase.from('daily_checkins').select('*');
+        if (companyId) query = query.eq('company_id', companyId);
+        const { data, error } = await query.order('created_at', { ascending: false } as any);
+        if (error) console.error('[getCheckinsByCompany] error:', error.message);
+        if (data && data.length > 0) { const m = data.map(mck); lSet(K.checkins, m); return m; }
+      } catch (e) { console.error('[getCheckinsByCompany] exception:', e); }
+    }
+    if (companyId) return (lGet<StoredCheckin[]>(K.checkins) || []).filter(c => c.companyId === companyId);
+    return lGet<StoredCheckin[]>(K.checkins) || [];
   },
   async getCheckinsByEmployee(employeeId: string): Promise<StoredCheckin[]> {
     if (isSB()) { try { const { data } = await supabase.from('daily_checkins').select('*').eq('employee_id', employeeId).order('date', { ascending: false } as any); if (data && data.length > 0) { const m = data.map(mck); lSet(K.checkins, m); return m; } } catch {} }

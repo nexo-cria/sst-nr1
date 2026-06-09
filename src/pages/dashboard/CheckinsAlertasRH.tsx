@@ -30,7 +30,7 @@ export default function CheckinsAlertasRH() {
     const all = await db.getCheckinsByCompany(companyId);
     setAlertCheckins(all.filter(c => c.status === 'alerta'));
   };
-  useEffect(() => { if (companyId) load(); }, [companyId]);
+  useEffect(() => { load(); }, [companyId]);
 
   const filtered = alertCheckins.filter(c => {
     const ms = c.employeeName.toLowerCase().includes(searchTerm.toLowerCase());

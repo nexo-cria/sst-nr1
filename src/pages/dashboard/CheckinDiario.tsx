@@ -7,10 +7,9 @@ import { checkinQuestions, type CheckinResponse } from '../../types/checkin';
 import { db, type StoredCheckin, type StoredEmployee } from '../../lib/storage';
 
 const categoryInfo = {
-  saude: { label: 'Saúde Mental', emoji: '🧠', gradient: 'from-purple-500 to-indigo-500', bg: 'bg-purple-50', border: 'border-purple-200' },
-  epi: { label: 'Seus EPIs', emoji: '🛡️', gradient: 'from-blue-500 to-indigo-500', bg: 'bg-blue-50', border: 'border-blue-200' },
-  ambiente: { label: 'Ambiente', emoji: '🏭', gradient: 'from-amber-500 to-orange-500', bg: 'bg-amber-50', border: 'border-amber-200' },
-  comportamento: { label: 'Relacionamento', emoji: '🤝', gradient: 'from-emerald-500 to-teal-500', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+  ambiente: { label: 'Condições e Ambiente', emoji: '🔧', gradient: 'from-amber-500 to-orange-500', bg: 'bg-amber-50', border: 'border-amber-200' },
+  epi: { label: 'Equipamentos e Proteção', emoji: '🦺', gradient: 'from-blue-500 to-indigo-500', bg: 'bg-blue-50', border: 'border-blue-200' },
+  saude: { label: 'Saúde Mental e Psicossocial', emoji: '🧠', gradient: 'from-purple-500 to-indigo-500', bg: 'bg-purple-50', border: 'border-purple-200' },
 };
 
 export default function CheckinDiario() {
@@ -27,7 +26,7 @@ export default function CheckinDiario() {
   const currentTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   const greeting = new Date().getHours() < 12 ? 'Bom dia' : new Date().getHours() < 18 ? 'Boa tarde' : 'Boa noite';
 
-  const categories = ['saude', 'epi', 'ambiente', 'comportamento'] as const;
+  const categories = ['ambiente', 'epi', 'saude'] as const;
   const questionsByCategory = categories.map(cat => ({
     category: cat,
     questions: checkinQuestions.filter(q => q.category === cat),
@@ -64,13 +63,13 @@ export default function CheckinDiario() {
 
   const submitCheckin = async () => {
     if (!employee) return;
-    // Perguntas que geram alerta quando respondidas negativamente (resposta 'nao')
-    const alertQsNeg = ['saude_3', 'saude_4', 'epi_1', 'epi_2', 'epi_3', 'comportamento_1', 'comportamento_4'];
-    // Perguntas que geram alerta quando respondidas positivamente (resposta 'sim')
-    const alertQsPos = ['saude_1', 'saude_2', 'saude_5', 'ambiente_1', 'ambiente_3', 'ambiente_4', 'comportamento_2', 'comportamento_3'];
+    // Perguntas que geram alerta quando respondidas "Não" (algo faltando/ruim)
+    const alertOnNo = ['epi_1', 'epi_2', 'epi_3', 'saude_1', 'saude_2', 'saude_3'];
+    // Perguntas que geram alerta quando respondidas "Sim" (problema identificado)
+    const alertOnYes = ['ambiente_1', 'ambiente_2', 'ambiente_3'];
     const negAlerts = responses.filter(r =>
-      (alertQsNeg.includes(r.questionId) && r.answer === 'nao') ||
-      (alertQsPos.includes(r.questionId) && r.answer === 'sim')
+      (alertOnNo.includes(r.questionId) && r.answer === 'nao') ||
+      (alertOnYes.includes(r.questionId) && r.answer === 'sim')
     );
 
     const checkin = await db.createCheckin({

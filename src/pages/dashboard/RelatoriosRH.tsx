@@ -14,86 +14,15 @@ interface EmployeeWithCheckins extends StoredEmployee {
 }
 
 const alertRecommendations: Record<string, { title: string; action: string; severity: 'alta' | 'media' | 'baixa' }> = {
-  saude_1: {
-    title: 'Estresse e Ansiedade',
-    action: 'Conversar com o colaborador sobre sobrecarga. Verificar se a demanda está adequada. Considerar encaminhamento ao EAP (Programa de Apoio ao Colaborador).',
-    severity: 'alta',
-  },
-  saude_2: {
-    title: 'Desmotivação e Sobrecarga',
-    action: 'Agendar conversa individual para entender causas. Reavaliar distribuição de tarefas. Verificar clima organizacional.',
-    severity: 'media',
-  },
-  saude_3: {
-    title: 'Dificuldade de Concentração',
-    action: 'Verificar se há fatores externos (ruído, estresse, medicamentos). Avaliar se o colaborador precisa de pausas mais frequentes.',
-    severity: 'media',
-  },
-  saude_4: {
-    title: 'Falta de Sono',
-    action: 'Verificar se há jornadas extenuantes. Orientar sobre higiene do sono. Se recorrente, considerar avaliação médica.',
-    severity: 'media',
-  },
-  saude_5: {
-    title: 'Uso de Medicamentos',
-    action: 'Verificar qual medicamento e seus efeitos. Avaliar se o colaborador está apto para suas funções. Considerar restrição de atividades de risco.',
-    severity: 'alta',
-  },
-  epi_1: {
-    title: 'EPI em Más Condições',
-    action: 'Substituir EPI imediatamente. Verificar causas do desgaste prematuro. Orientar sobre guarda e conservação.',
-    severity: 'alta',
-  },
-  epi_2: {
-    title: 'EPIs Faltando',
-    action: 'Fornecer EPIs faltantes antes do início das atividades. Verificar estoque e processo de distribuição.',
-    severity: 'alta',
-  },
-  epi_3: {
-    title: 'EPIs Fora da Validade',
-    action: 'Substituir EPIs expirados imediatamente. Implementar controle de validade. Orientar colaborador sobre importância.',
-    severity: 'alta',
-  },
-  ambiente_1: {
-    title: 'Ruído Excessivo',
-    action: 'Avaliar necessidade de proteção auditiva adicional. Verificar fontes de ruído. Considerar isolamento ou mudanca de horário.',
-    severity: 'media',
-  },
-  ambiente_2: {
-    title: 'Condições Ambientais',
-    action: 'Verificar ventilação, iluminação e temperatura. Ajustar conforme NR-17 (Ergonomia). Documentar medidas adotadas.',
-    severity: 'media',
-  },
-  ambiente_3: {
-    title: 'Risco Identificado',
-    action: 'Isolar área se necessário. Documentar e comunicar ao SESMT. Tomar medidas imediatas de controle. Registrar em PTNR.',
-    severity: 'alta',
-  },
-  ambiente_4: {
-    title: 'Problema Ergonômico',
-    action: 'Avaliar postura e estação de trabalho conforme NR-17. Ajustar mobiliário. Considerar pausas programadas. Encaminhar para avaliação ergonômica.',
-    severity: 'media',
-  },
-  comportamento_1: {
-    title: 'Conflito no Trabalho',
-    action: 'Mediar relação entre colaboradores. Verificar clima da equipe. Considerar dinâmicas de integração. Documentar ocorrência.',
-    severity: 'media',
-  },
-  comportamento_2: {
-    title: 'Assédio ou Discriminação',
-    action: 'AÇÃO URGENTE: Ouvir o colaborador. Documentar relato. Iniciar procedimento formal conforme política interna. Garantir sigilo e proteção.',
-    severity: 'alta',
-  },
-  comportamento_3: {
-    title: 'Sobrecarga de Trabalho',
-    action: 'Reavaliar carga horária e distribuição de tarefas. Verificar se há turnover na equipe. Ajustar demandas conforme capacidade.',
-    severity: 'media',
-  },
-  comportamento_4: {
-    title: 'Desconhecimento de Procedimentos',
-    action: 'Realizar treinamento sobre canais de denúncia e procedimentos de segurança. Reforçar comunicación interna.',
-    severity: 'baixa',
-  },
+  ambiente_1: { title: 'Posto/Ferramenta com Defeito', action: 'Isolar equipamento com defeito. Comunicar manutenção. Não utilizá-lo até correção.', severity: 'alta' },
+  ambiente_2: { title: 'Alteração no Ambiente', action: 'Verificar e corrigir a condição ambiental (piso, iluminação, fiação). Tomar medidas imediatas.', severity: 'alta' },
+  ambiente_3: { title: 'Risco Não Previsto', action: 'Identificar e avaliar o risco. Comunicar ao SESMT. Registrar em PTNR. Tomar medidas de controle.', severity: 'alta' },
+  epi_1: { title: 'EPIs Faltando ou Inválidos', action: 'Fornecer/substituir EPIs antes do início das atividades. Verificar estoque e validade.', severity: 'alta' },
+  epi_2: { title: 'EPCs Inoperantes', action: 'Verificar equipamentos de proteção coletiva do setor. Acionar manutenção. Garantir proteção alternativa.', severity: 'alta' },
+  epi_3: { title: 'Desconhecimento de Emergência', action: 'Realizar orientação imediata sobre procedimentos de emergência e contatos. Documentar.', severity: 'media' },
+  saude_1: { title: 'Cansaço ou Estresse Elevado', action: 'Conversar com o colaborador. Verificar jornada e condições de trabalho. Considerar pausa ou reavaliação de tarefas.', severity: 'media' },
+  saude_2: { title: 'Sobrecarga ou Falta de Clareza', action: 'Reavaliar metas do dia. Verificar se a demanda é adequada. Orientar sobre priorização.', severity: 'media' },
+  saude_3: { title: 'Insegurança Psicológica', action: 'Ouvir o colaborador. Verificar clima e ritmo de trabalho. Avaliar se há necessidade de suporte psicológico.', severity: 'media' },
 };
 
 export default function RelatoriosRH() {
@@ -400,11 +329,11 @@ export default function RelatoriosRH() {
                     {selectedCheckin.responses
                       .filter(r => {
                         const qId = r.questionId;
-                        // Alertas por resposta 'sim'
-                        const alertSim = ['saude_1', 'saude_2', 'saude_5', 'ambiente_1', 'ambiente_3', 'ambiente_4', 'comportamento_2', 'comportamento_3'];
-                        // Alertas por resposta 'nao'
-                        const alertNao = ['saude_3', 'saude_4', 'epi_1', 'epi_2', 'epi_3', 'comportamento_1', 'comportamento_4'];
-                        return (alertSim.includes(qId) && r.answer === 'sim') || (alertNao.includes(qId) && r.answer === 'nao');
+                        // Alertas por resposta 'sim' (problema identificado)
+                        const alertOnYes = ['ambiente_1', 'ambiente_2', 'ambiente_3'];
+                        // Alertas por resposta 'nao' (algo faltando/ruim)
+                        const alertOnNo = ['epi_1', 'epi_2', 'epi_3', 'saude_1', 'saude_2', 'saude_3'];
+                        return (alertOnYes.includes(qId) && r.answer === 'sim') || (alertOnNo.includes(qId) && r.answer === 'nao');
                       })
                       .map(r => {
                         const rec = getRecommendation(r.questionId);

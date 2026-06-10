@@ -520,34 +520,35 @@ export const db = {
   async createInvite(data: Omit<StoredInvite, 'id' | 'createdAt'>): Promise<StoredInvite> {
     const localItem: StoredInvite = { ...data, id: gid(), createdAt: new Date().toISOString() };
     const sbData = {
-      company_id: data.companyId || null, created_by: data.createdBy, name: data.name, email: data.email,
+      company_id: data.companyId || null, created_by: data.createdBy || null, name: data.name, email: data.email,
       cpf: data.cpf, role: data.role, department: data.department, admission_date: data.admissionDate || null,
       token: data.token, status: data.status, face_photo: data.facePhoto, face_verified: data.faceVerified,
       face_captured_at: data.faceCapturedAt || null, accepted_at: data.acceptedAt || null, expires_at: data.expiresAt,
     };
 
-    // Tenta Supabase PRIMEIRO — se falhar, loga erro mas salva local
     if (isSB()) {
       try {
         console.log('[createInvite] Inserting into Supabase:', sbData);
         const { data: inserted, error } = await supabase.from('invites').insert(sbData).select().single();
         if (error) {
           console.error('[createInvite] Supabase INSERT error:', error.message, error.details, error.hint);
-        } else if (inserted) {
+          throw new Error('Erro ao salvar convite no servidor: ' + error.message);
+        }
+        if (inserted) {
           console.log('[createInvite] Supabase INSERT success:', inserted);
           const mapped = mi(inserted);
-          // Salvar local também para cache
           const list = lGet<StoredInvite[]>(K.invites) || [];
           list.unshift(mapped);
           lSet(K.invites, list);
           return mapped;
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error('[createInvite] Supabase exception:', e);
+        throw e;
       }
     }
 
-    console.warn('[createInvite] FALLBACK to localStorage — convite NÃO está no Supabase!');
+    console.warn('[createInvite] FALLBACK to localStorage');
     const list = lGet<StoredInvite[]>(K.invites) || [];
     list.unshift(localItem);
     lSet(K.invites, list);

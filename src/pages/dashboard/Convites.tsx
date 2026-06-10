@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   Search, UserPlus, X, Mail, Copy, Check, Clock, CheckCircle, XCircle,
-  Trash2, MoreVertical, Link as LinkIcon, Calendar, Building, Shield,
+  Trash2, MoreVertical, Link as LinkIcon, Calendar, Building, Shield, AlertCircle,
 } from 'lucide-react';
 import { db, type StoredInvite } from '../../lib/storage';
 import { useAuth } from '../../context/AuthContext';
@@ -14,6 +14,7 @@ export default function Convites() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
@@ -36,34 +37,42 @@ export default function Convites() {
 
   const handleCreateInvite = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg('');
     const token = crypto.randomUUID().replace(/-/g, '').substring(0, 24);
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-    const result = await db.createInvite({
-      companyId,
-      createdBy: user?.id || '',
-      name: formData.name,
-      email: formData.email,
-      cpf: formData.cpf,
-      role: formData.role,
-      department: formData.department,
-      admissionDate: formData.admissionDate,
-      birthDate: formData.birthDate,
-      phone: formData.phone,
-      token,
-      status: 'pending',
-      facePhoto: '',
-      faceVerified: false,
-      faceCapturedAt: '',
-      acceptedAt: '',
-      expiresAt,
-    });
+    try {
+      const result = await db.createInvite({
+        companyId,
+        createdBy: user?.id || '',
+        name: formData.name,
+        email: formData.email,
+        cpf: formData.cpf,
+        role: formData.role,
+        department: formData.department,
+        admissionDate: formData.admissionDate,
+        birthDate: formData.birthDate,
+        phone: formData.phone,
+        token,
+        status: 'pending',
+        facePhoto: '',
+        faceVerified: false,
+        faceCapturedAt: '',
+        acceptedAt: '',
+        expiresAt,
+      });
 
-    setShowModal(false);
-    setFormData({ name: '', email: '', cpf: '', role: '', department: '', admissionDate: '', birthDate: '', phone: '' });
-    setSuccessMsg(`Convite gerado para ${formData.name}! Copie e envie o link.`);
-    await reload();
-    setTimeout(() => setSuccessMsg(''), 8000);
+      setShowModal(false);
+      setFormData({ name: '', email: '', cpf: '', role: '', department: '', admissionDate: '', birthDate: '', phone: '' });
+      setSuccessMsg(`Convite gerado para ${formData.name}! Copie e envie o link.`);
+      await reload();
+      setTimeout(() => setSuccessMsg(''), 8000);
+    } catch (err: any) {
+      console.error('[Convites] createInvite error:', err);
+      setErrorMsg('Erro ao criar convite: ' + (err?.message || 'Verifique sua conexão e tente novamente.'));
+      setShowModal(false);
+      setTimeout(() => setErrorMsg(''), 8000);
+    }
   };
 
   const handleCopyLink = (invite: StoredInvite) => {
@@ -145,6 +154,14 @@ export default function Convites() {
         <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 animate-fadeIn">
           <Check className="w-5 h-5 text-emerald-600" />
           <p className="text-sm text-emerald-700 font-medium">{successMsg}</p>
+        </div>
+      )}
+
+      {/* Error */}
+      {errorMsg && (
+        <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 animate-fadeIn">
+          <AlertCircle className="w-5 h-5 text-red-600" />
+          <p className="text-sm text-red-700 font-medium">{errorMsg}</p>
         </div>
       )}
 

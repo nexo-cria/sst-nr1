@@ -57,6 +57,13 @@ function lSet<T>(k: string, v: T) { localStorage.setItem(P + k, JSON.stringify(v
 function lRm(k: string) { localStorage.removeItem(P + k); }
 function gid() { return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`; }
 
+function uuidv4(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
 const K = { users: 'u', companies: 'c', employees: 'e', documents: 'd', trainings: 't', epis: 'p', checkins: 'k', session: 's', init: 'i', invites: 'v' };
 
 const DEFAULT_ADMIN: StoredUser = {
@@ -242,30 +249,33 @@ export const db = {
   },
 
   async createUser(data: Omit<StoredUser, 'id' | 'createdAt'>): Promise<{ user: StoredUser | null; error: string | null }> {
-    // SALVA LOCAL PRIMEIRO (sempre funciona)
-    const users = lGet<StoredUser[]>(K.users) || [];
-    if (users.some(u => u.email === data.email)) return { user: null, error: 'E-mail já cadastrado' };
-    const newUser: StoredUser = { ...data, id: gid(), createdAt: new Date().toISOString() };
-    users.push(newUser);
-    lSet(K.users, users);
+    const newUser: StoredUser = { ...data, id: uuidv4(), createdAt: new Date().toISOString() };
 
-    // SYNC SUPABASE EM BACKGROUND (se falhar, ignora)
     if (isSB()) {
+      const s = lGet<{ email?: string }>(K.session);
       try {
-        const s = lGet<{ email?: string }>(K.session);
         const { data: authData, error: signUpError } = await supabase.auth.signUp({
           email: data.email, password: data.password,
           options: { data: { name: data.name, role: data.role } },
         });
-        if (signUpError) console.error('[createUser] signUp error:', signUpError.message);
-        if (authData?.user) {
+
+        if (signUpError) {
+          console.error('[createUser] signUp error:', signUpError.message);
+          if (signUpError.message?.includes('already') || signUpError.message?.includes('registered')) {
+            console.log('[createUser] User exists, trying signIn...');
+            const { data: signInData } = await supabase.auth.signInWithPassword({ email: data.email, password: data.password });
+            if (signInData?.user) {
+              newUser.id = signInData.user.id;
+            }
+          }
+        } else if (authData?.user) {
           newUser.id = authData.user.id;
           await supabase.from('profiles').update({
             company_id: data.companyId || null, company_name: data.companyName,
             avatar: data.avatar, created_by: data.createdBy, role: data.role,
           } as never).eq('id', authData.user.id);
         }
-        // Restaura sessão do admin
+
         if (s?.email && s.email !== data.email) {
           try {
             const u = lGet<StoredUser[]>(K.users)?.find(x => x.email === s.email);
@@ -274,6 +284,17 @@ export const db = {
         }
       } catch (e) { console.error('[createUser] supabase exception:', e); }
     }
+
+    const users = lGet<StoredUser[]>(K.users) || [];
+    if (users.some(u => u.email === data.email)) {
+      const idx = users.findIndex(u => u.email === data.email);
+      users[idx].id = newUser.id;
+      lSet(K.users, users);
+    } else {
+      users.push(newUser);
+      lSet(K.users, users);
+    }
+
     return { user: newUser, error: null };
   },
 
@@ -600,5 +621,81 @@ export const db = {
 
   async deleteInvite(id: string): Promise<boolean> {
     return deleteFallback('invites', K.invites, id);
+  },
+
+  async registerFromInvite(params: {
+    inviteId: string; email: string; password: string; name: string;
+    companyId: string | null; role: string; department: string;
+    admissionDate: string; birthDate: string; phone: string; cpf: string;
+    facePhoto: string; createdBy: string;
+  }): Promise<{ success: boolean; error: string }> {
+    if (!isSB()) return { success: false, error: 'Supabase não configurado' };
+
+    let userId: string | null = null;
+
+    // 1) Try signUp
+    try {
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: params.email,
+        password: params.password,
+        options: { data: { name: params.name, role: 'colaborador' } },
+      });
+      if (signUpError) {
+        console.error('[registerFromInvite] signUp error:', signUpError.message);
+        if (signUpError.message?.includes('already') || signUpError.message?.includes('registered')) {
+          const { data: signInData } = await supabase.auth.signInWithPassword({ email: params.email, password: params.password });
+          if (signInData?.user) userId = signInData.user.id;
+        }
+      } else if (authData?.user) {
+        userId = authData.user.id;
+      }
+    } catch (e) { console.error('[registerFromInvite] auth exception:', e); }
+
+    if (!userId) userId = uuidv4();
+    console.log('[registerFromInvite] userId:', userId);
+
+    // 2) Insert employee
+    const empData = {
+      id: uuidv4(),
+      company_id: params.companyId || null,
+      user_id: userId,
+      name: params.name,
+      email: params.email,
+      cpf: params.cpf,
+      role: params.role || 'Colaborador',
+      department: params.department || 'Geral',
+      admission_date: params.admissionDate || null,
+      birth_date: params.birthDate || null,
+      phone: params.phone || '',
+      is_active: true,
+    };
+
+    const { error: empError } = await supabase.from('employees').insert(empData).select().single();
+    if (empError) {
+      console.error('[registerFromInvite] employee insert error:', empError.message, empError.details, empError.hint);
+      return { success: false, error: 'Erro ao salvar funcionário: ' + empError.message };
+    }
+    console.log('[registerFromInvite] employee created:', empData.id);
+
+    // 3) Update invite
+    const { error: invError } = await supabase.from('invites').update({
+      status: 'accepted',
+      face_photo: params.facePhoto,
+      face_verified: true,
+      face_captured_at: new Date().toISOString(),
+      accepted_at: new Date().toISOString(),
+    }).eq('id', params.inviteId);
+    if (invError) console.error('[registerFromInvite] invite update error:', invError.message);
+
+    // 4) Restore admin session
+    try {
+      const s = lGet<{ email?: string }>(K.session);
+      if (s?.email && s.email !== params.email) {
+        const u = lGet<StoredUser[]>(K.users)?.find(x => x.email === s.email);
+        if (u) await supabase.auth.signInWithPassword({ email: u.email, password: u.password });
+      }
+    } catch {}
+
+    return { success: true, error: '' };
   },
 };

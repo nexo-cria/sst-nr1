@@ -138,47 +138,27 @@ export default function CadastroConvite() {
     try {
       const smallPhoto = compressPhoto(facePhoto);
 
-      const result = await db.createUser({
+      const result = await db.registerFromInvite({
+        inviteId: invite.id,
         email: formData.email,
         password,
         name: formData.name,
-        role: 'colaborador',
-        avatar: smallPhoto || formData.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase(),
-        companyId: invite.companyId,
-        companyName: '',
-        isActive: true,
-        createdBy: invite.createdBy,
-      });
-
-      if (result.error) {
-        setErrorMsg(result.error);
-        setIsSubmitting(false);
-        return;
-      }
-
-      const userId = result.user?.id || null;
-
-      await db.createEmployee({
-        companyId: invite.companyId,
-        userId,
-        name: formData.name,
-        email: formData.email,
-        cpf: invite.cpf || formData.cpf,
+        companyId: invite.companyId || null,
         role: invite.role || 'Colaborador',
         department: invite.department || 'Geral',
         admissionDate: invite.admissionDate || new Date().toISOString().split('T')[0],
         birthDate: invite.birthDate || '',
         phone: invite.phone || formData.phone,
-        isActive: true,
+        cpf: invite.cpf || formData.cpf,
+        facePhoto: smallPhoto,
+        createdBy: invite.createdBy,
       });
 
-      await db.updateInvite(invite.id, {
-        status: 'accepted',
-        facePhoto: smallPhoto,
-        faceVerified: true,
-        faceCapturedAt: new Date().toISOString(),
-        acceptedAt: new Date().toISOString(),
-      });
+      if (!result.success) {
+        setErrorMsg(result.error || 'Erro ao realizar cadastro. Tente novamente.');
+        setIsSubmitting(false);
+        return;
+      }
 
       setStep('success');
     } catch (err: any) {

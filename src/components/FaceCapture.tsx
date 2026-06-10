@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Camera, RotateCcw, Check, AlertCircle, Video, VideoOff, Upload } from 'lucide-react';
+import { Camera, RotateCcw, Check, AlertCircle, Video, VideoOff } from 'lucide-react';
 
 interface FaceCaptureProps {
   onCapture: (photoBase64: string) => void;
@@ -14,7 +14,6 @@ export default function FaceCapture({ onCapture, onCancel }: FaceCaptureProps) {
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(false);
-  const [mode, setMode] = useState<'camera' | 'upload'>('camera');
 
   const startCamera = useCallback(async () => {
     setIsStarting(true);
@@ -50,40 +49,6 @@ export default function FaceCapture({ onCapture, onCancel }: FaceCaptureProps) {
     };
   }, []);
 
-  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      setCameraError('Por favor, selecione uma imagem válida.');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const maxSize = 640;
-        let w = img.width;
-        let h = img.height;
-        if (w > maxSize || h > maxSize) {
-          if (w > h) { h = (h / w) * maxSize; w = maxSize; }
-          else { w = (w / h) * maxSize; h = maxSize; }
-        }
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        ctx.drawImage(img, 0, 0, w, h);
-        const photo = canvas.toDataURL('image/jpeg', 0.7);
-        setCapturedPhoto(photo);
-      };
-      img.src = ev.target?.result as string;
-    };
-    reader.readAsDataURL(file);
-  }, []);
-
   const capturePhoto = useCallback(() => {
     if (!videoRef.current || !canvasRef.current) return;
     const video = videoRef.current;
@@ -106,28 +71,14 @@ export default function FaceCapture({ onCapture, onCancel }: FaceCaptureProps) {
   const retakePhoto = useCallback(() => {
     setCapturedPhoto(null);
     setCameraError(null);
-    if (mode === 'camera') {
-      startCamera();
-    }
-  }, [startCamera, mode]);
+    startCamera();
+  }, [startCamera]);
 
   const confirmPhoto = useCallback(() => {
     if (capturedPhoto) {
       onCapture(capturedPhoto);
     }
   }, [capturedPhoto, onCapture]);
-
-  const switchToUpload = () => {
-    stream?.getTracks().forEach(t => t.stop());
-    setMode('upload');
-    setCameraError(null);
-  };
-
-  const switchToCamera = () => {
-    setMode('camera');
-    setCameraError(null);
-    startCamera();
-  };
 
   return (
     <div className="space-y-4">
@@ -144,30 +95,6 @@ export default function FaceCapture({ onCapture, onCancel }: FaceCaptureProps) {
           </span>
         </p>
       </div>
-
-      {/* Toggle Câmera / Upload */}
-      {!capturedPhoto && (
-        <div className="flex gap-2 bg-slate-100 p-1 rounded-xl">
-          <button
-            onClick={switchToCamera}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-              mode === 'camera' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            <Camera className="w-4 h-4" />
-            Câmera
-          </button>
-          <button
-            onClick={switchToUpload}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-              mode === 'upload' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            <Upload className="w-4 h-4" />
-            Enviar Foto
-          </button>
-        </div>
-      )}
 
       {/* Área da câmera */}
       <div className="relative rounded-2xl overflow-hidden bg-slate-900 aspect-[4/3]">
@@ -196,21 +123,12 @@ export default function FaceCapture({ onCapture, onCancel }: FaceCaptureProps) {
           <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
             <VideoOff className="w-12 h-12 text-slate-500 mb-3" />
             <p className="text-sm text-slate-300 mb-3">{cameraError}</p>
-            <div className="flex gap-2">
-              <button
-                onClick={startCamera}
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-colors"
-              >
-                Tentar novamente
-              </button>
-              <button
-                onClick={switchToUpload}
-                className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-2"
-              >
-                <Upload className="w-4 h-4" />
-                Enviar foto
-              </button>
-            </div>
+            <button
+              onClick={startCamera}
+              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-colors"
+            >
+              Tentar novamente
+            </button>
           </div>
         ) : (
           <>
@@ -250,7 +168,7 @@ export default function FaceCapture({ onCapture, onCancel }: FaceCaptureProps) {
       </div>
 
       {/* Dicas */}
-      {!capturedPhoto && !cameraError && mode === 'camera' && (
+      {!capturedPhoto && !cameraError && (
         <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
           <div className="flex items-start gap-2">
             <AlertCircle className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
@@ -262,18 +180,6 @@ export default function FaceCapture({ onCapture, onCancel }: FaceCaptureProps) {
                 <li>Remova óculos escuros, se possível</li>
                 <li>Mantenha o rosto centralizado no guia</li>
               </ul>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {mode === 'upload' && !capturedPhoto && (
-        <div className="bg-amber-50 border border-amber-100 rounded-xl p-3">
-          <div className="flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-            <div className="text-xs text-amber-700">
-              <p className="font-semibold">Dicas para upload:</p>
-              <p className="mt-1">Envie uma selfie recente com o rosto bem visível e iluminado.</p>
             </div>
           </div>
         </div>
@@ -311,16 +217,14 @@ export default function FaceCapture({ onCapture, onCancel }: FaceCaptureProps) {
                 Cancelar
               </button>
             )}
-            {mode === 'camera' && (
-              <button
-                onClick={capturePhoto}
-                disabled={!stream || !!cameraError}
-                className="flex-1 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Camera className="w-5 h-5" />
-                Tirar Foto
-              </button>
-            )}
+            <button
+              onClick={capturePhoto}
+              disabled={!stream || !!cameraError}
+              className="flex-1 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Camera className="w-5 h-5" />
+              Tirar Foto
+            </button>
           </>
         )}
       </div>

@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     (async () => {
       const session = await db.getSession();
       if (session) {
-        setState({ user: { id: session.id, email: session.email, name: session.name, role: session.role, avatar: session.avatar, companyId: session.companyId, companyName: session.companyName, isActive: session.isActive }, isAuthenticated: true, isLoading: false });
+        setState({ user: { id: session.id || '', email: session.email || '', name: session.name || '', role: session.role || 'colaborador', avatar: session.avatar || '', companyId: session.companyId || '', companyName: session.companyName || '', isActive: session.isActive ?? true }, isAuthenticated: true, isLoading: false });
       } else {
         setState(prev => ({ ...prev, isLoading: false }));
       }

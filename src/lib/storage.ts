@@ -259,7 +259,7 @@ export const db = {
         });
         if (signUpError) console.error('[createUser] signUp error:', signUpError.message);
         if (authData?.user) {
-          // Usa session para garantir que o admin continua logado
+          newUser.id = authData.user.id;
           await supabase.from('profiles').update({
             company_id: data.companyId || null, company_name: data.companyName,
             avatar: data.avatar, created_by: data.createdBy, role: data.role,

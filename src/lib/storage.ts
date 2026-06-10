@@ -190,6 +190,29 @@ export const db = {
     lRm(K.session);
   },
 
+  async changePassword(currentPassword: string, newPassword: string): Promise<{ success: boolean; error?: string }> {
+    const session = lGet<any>(K.session);
+    if (!session?.email) return { success: false, error: 'Sessão não encontrada' };
+
+    if (isSB()) {
+      try {
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) return { success: false, error: error.message };
+        return { success: true };
+      } catch (e: any) {
+        return { success: false, error: e?.message || 'Erro ao alterar senha' };
+      }
+    }
+
+    const users = lGet<StoredUser[]>(K.users) || [];
+    const idx = users.findIndex(u => u.email === session.email);
+    if (idx === -1) return { success: false, error: 'Usuário não encontrado' };
+    if (users[idx].password !== currentPassword) return { success: false, error: 'Senha atual incorreta' };
+    users[idx].password = newPassword;
+    lSet(K.users, users);
+    return { success: true };
+  },
+
   async getSession(): Promise<any> {
     // Sempre tenta localStorage primeiro (mais rápido e confiável)
     const localSession = lGet(K.session);

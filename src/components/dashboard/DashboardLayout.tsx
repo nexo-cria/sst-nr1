@@ -38,7 +38,7 @@ export default function DashboardLayout() {
       <div className="lg:ml-64">
         <TopBar onMenuClick={() => setSidebarOpen(true)} title={title} />
 
-        <main className="p-4 lg:p-6 pb-24 lg:pb-6">
+        <main className="p-4 lg:p-6 pb-20 lg:pb-6">
           <Outlet />
         </main>
       </div>

@@ -2,7 +2,7 @@ export interface CheckinQuestion {
   id: string;
   question: string;
   emoji: string;
-  category: 'saude' | 'epi' | 'ambiente' | 'comportamento';
+  category: 'saude' | 'ambiente';
   required: boolean;
 }
 
@@ -26,7 +26,7 @@ export interface DailyCheckin {
 }
 
 export const checkinQuestions: CheckinQuestion[] = [
-  // 1. Condições Operacionais e do Ambiente (Identificação de Perigos)
+  // Condições Operacionais e do Ambiente (Identificação de Perigos)
   {
     id: 'ambiente_1',
     emoji: '🔧',
@@ -48,29 +48,7 @@ export const checkinQuestions: CheckinQuestion[] = [
     category: 'ambiente',
     required: true,
   },
-  // 2. Equipamentos e Proteção (Medidas de Prevenção)
-  {
-    id: 'epi_1',
-    emoji: '🦺',
-    question: 'Você está com todos os EPIs (Equipamentos de Proteção Individual) necessários e válidos para a sua atividade?',
-    category: 'epi',
-    required: true,
-  },
-  {
-    id: 'epi_2',
-    emoji: '🛡️',
-    question: 'Os equipamentos de proteção coletiva (EPCs) do seu setor estão operacionais?',
-    category: 'epi',
-    required: true,
-  },
-  {
-    id: 'epi_3',
-    emoji: '🚨',
-    question: 'Você sabe como agir e quem acionar imediatamente em caso de emergência hoje?',
-    category: 'epi',
-    required: true,
-  },
-  // 3. Fatores Psicossociais e de Saúde Mental (NR-1)
+  // Fatores Psicossociais e de Saúde Mental (NR-1)
   {
     id: 'saude_1',
     emoji: '😴',

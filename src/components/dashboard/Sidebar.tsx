@@ -72,8 +72,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       { icon: <ClipboardCheck className="w-5 h-5" />, label: 'Check-in Diário', path: '/dashboard/checkin-diario' },
       { icon: <UserCircle className="w-5 h-5" />, label: 'Meus Dados', path: '/dashboard/meus-dados' },
       { icon: <FileText className="w-5 h-5" />, label: 'Meus Documentos', path: '/dashboard/meus-documentos' },
-      { icon: <GraduationCap className="w-5 h-5" />, label: 'Meus Treinamentos', path: '/dashboard/meus-treinamentos' },
-      { icon: <HardHat className="w-5 h-5" />, label: 'Meus EPIs', path: '/dashboard/meus-epis' },
     ];
   };
 

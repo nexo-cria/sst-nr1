@@ -8,9 +8,6 @@ const alertRecommendations: Record<string, { title: string; action: string; seve
   ambiente_1: { title: 'Posto/Ferramenta com Defeito', action: 'Isolar equipamento com defeito. Comunicar manutenção. Não utilizá-lo até correção.', severity: 'alta' },
   ambiente_2: { title: 'Alteração no Ambiente', action: 'Verificar e corrigir a condição ambiental (piso, iluminação, fiação). Tomar medidas imediatas.', severity: 'alta' },
   ambiente_3: { title: 'Risco Não Previsto', action: 'Identificar e avaliar o risco. Comunicar ao SESMT. Registrar em PTNR. Tomar medidas de controle.', severity: 'alta' },
-  epi_1: { title: 'EPIs Faltando ou Inválidos', action: 'Fornecer/substituir EPIs antes do início das atividades. Verificar estoque e validade.', severity: 'alta' },
-  epi_2: { title: 'EPCs Inoperantes', action: 'Verificar equipamentos de proteção coletiva do setor. Acionar manutenção. Garantir proteção alternativa.', severity: 'alta' },
-  epi_3: { title: 'Desconhecimento de Emergência', action: 'Realizar orientação imediata sobre procedimentos de emergência e contatos. Documentar.', severity: 'media' },
   saude_1: { title: 'Cansaço ou Estresse Elevado', action: 'Conversar com o colaborador. Verificar jornada e condições de trabalho. Considerar pausa ou reavaliação de tarefas.', severity: 'media' },
   saude_2: { title: 'Sobrecarga ou Falta de Clareza', action: 'Reavaliar metas do dia. Verificar se a demanda é adequada. Orientar sobre priorização.', severity: 'media' },
   saude_3: { title: 'Insegurança Psicológica', action: 'Ouvir o colaborador. Verificar clima e ritmo de trabalho. Avaliar se há necessidade de suporte psicológico.', severity: 'media' },
@@ -70,7 +67,7 @@ export default function CheckinsAlertasRH() {
     return checkin.responses.filter(r => {
       const qId = r.questionId;
       const alertOnYes = ['ambiente_1', 'ambiente_2', 'ambiente_3'];
-      const alertOnNo = ['epi_1', 'epi_2', 'epi_3', 'saude_1', 'saude_2', 'saude_3'];
+      const alertOnNo = ['saude_1', 'saude_2', 'saude_3'];
       return (alertOnYes.includes(qId) && r.answer === 'sim') || (alertOnNo.includes(qId) && r.answer === 'nao');
     });
   };

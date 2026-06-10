@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  ChevronRight, X, AlertCircle, Calendar, Sparkles,
+  ChevronRight, X, Calendar, Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { checkinQuestions, type CheckinResponse } from '../../types/checkin';
@@ -8,7 +8,6 @@ import { db, type StoredCheckin, type StoredEmployee } from '../../lib/storage';
 
 const categoryInfo = {
   ambiente: { label: 'Condições e Ambiente', emoji: '🔧', gradient: 'from-amber-500 to-orange-500', bg: 'bg-amber-50', border: 'border-amber-200' },
-  epi: { label: 'Equipamentos e Proteção', emoji: '🦺', gradient: 'from-blue-500 to-indigo-500', bg: 'bg-blue-50', border: 'border-blue-200' },
   saude: { label: 'Saúde Mental e Psicossocial', emoji: '🧠', gradient: 'from-purple-500 to-indigo-500', bg: 'bg-purple-50', border: 'border-purple-200' },
 };
 
@@ -26,7 +25,7 @@ export default function CheckinDiario() {
   const currentTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   const greeting = new Date().getHours() < 12 ? 'Bom dia' : new Date().getHours() < 18 ? 'Boa tarde' : 'Boa noite';
 
-  const categories = ['ambiente', 'epi', 'saude'] as const;
+  const categories = ['ambiente', 'saude'] as const;
   const questionsByCategory = categories.map(cat => ({
     category: cat,
     questions: checkinQuestions.filter(q => q.category === cat),
@@ -64,7 +63,7 @@ export default function CheckinDiario() {
   const submitCheckin = async () => {
     if (!employee) return;
     // Perguntas que geram alerta quando respondidas "Não" (algo faltando/ruim)
-    const alertOnNo = ['epi_1', 'epi_2', 'epi_3', 'saude_1', 'saude_2', 'saude_3'];
+    const alertOnNo = ['saude_1', 'saude_2', 'saude_3'];
     // Perguntas que geram alerta quando respondidas "Sim" (problema identificado)
     const alertOnYes = ['ambiente_1', 'ambiente_2', 'ambiente_3'];
     const negAlerts = responses.filter(r =>
@@ -260,13 +259,6 @@ export default function CheckinDiario() {
                           ➖
                         </button>
                       </div>
-
-                      {r?.answer === 'nao' && (
-                        <div className="flex items-start gap-2 mt-3 p-3 bg-amber-50 rounded-xl border border-amber-100 animate-fadeIn">
-                          <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                          <p className="text-xs text-amber-700">⚡ Comunique seu supervisor sobre este ponto.</p>
-                        </div>
-                      )}
                     </div>
                   );
                 })}

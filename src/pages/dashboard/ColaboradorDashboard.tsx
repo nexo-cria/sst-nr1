@@ -28,8 +28,12 @@ export default function ColaboradorDashboard() {
       {/* Welcome */}
       <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-6 text-white">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl font-bold">
-            {user?.avatar || user?.name?.charAt(0)}
+          <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl font-bold overflow-hidden">
+            {user?.avatar?.startsWith('data:') ? (
+              <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+            ) : (
+              user?.avatar || user?.name?.charAt(0)
+            )}
           </div>
           <div>
             <h2 className="text-xl font-bold mb-1">Olá, {user?.name?.split(' ')[0]}!</h2>

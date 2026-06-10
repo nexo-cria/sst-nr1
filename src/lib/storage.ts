@@ -261,7 +261,7 @@ export const db = {
         if (authData?.user) {
           // Usa session para garantir que o admin continua logado
           await supabase.from('profiles').update({
-            company_id: data.companyId, company_name: data.companyName,
+            company_id: data.companyId || null, company_name: data.companyName,
             avatar: data.avatar, created_by: data.createdBy, role: data.role,
           } as never).eq('id', authData.user.id);
         }
@@ -363,7 +363,7 @@ export const db = {
 
   async createEmployee(data: Omit<StoredEmployee, 'id' | 'createdAt'>): Promise<StoredEmployee> {
     const localItem: StoredEmployee = { ...data, id: gid(), createdAt: new Date().toISOString() };
-    const sbData = { company_id: data.companyId, user_id: data.userId, name: data.name, email: data.email, cpf: data.cpf, role: data.role, department: data.department, admission_date: data.admissionDate, birth_date: data.birthDate || null, phone: data.phone, is_active: data.isActive };
+    const sbData = { company_id: data.companyId || null, user_id: data.userId || null, name: data.name, email: data.email, cpf: data.cpf, role: data.role, department: data.department, admission_date: data.admissionDate, birth_date: data.birthDate || null, phone: data.phone, is_active: data.isActive };
     const result = await insertFallback('employees', K.employees, sbData, me, localItem);
     // Atualizar contagem
     const cl = lGet<StoredCompany[]>(K.companies) || [];
@@ -418,7 +418,7 @@ export const db = {
   },
   async createDocument(data: Omit<StoredDocument, 'id' | 'createdAt'>): Promise<StoredDocument> {
     const localItem: StoredDocument = { ...data, id: gid(), createdAt: new Date().toISOString() };
-    const sbData = { company_id: data.companyId, employee_id: data.employeeId, type: data.type, title: data.title, description: data.description, status: data.status, expires_at: data.expiresAt, signed_by: data.signedBy };
+    const sbData = { company_id: data.companyId || null, employee_id: data.employeeId, type: data.type, title: data.title, description: data.description, status: data.status, expires_at: data.expiresAt, signed_by: data.signedBy };
     return insertFallback('documents', K.documents, sbData, md, localItem);
   },
   async updateDocument(id: string, updates: Partial<StoredDocument>): Promise<StoredDocument | null> {
@@ -442,7 +442,7 @@ export const db = {
   },
   async createTraining(data: Omit<StoredTraining, 'id'>): Promise<StoredTraining> {
     const localItem: StoredTraining = { ...data, id: gid() };
-    const sbData = { company_id: data.companyId, title: data.title, description: data.description, type: data.type, duration: data.duration, instructor: data.instructor, date: data.date, expires_at: data.expiresAt, status: data.status, participants: data.participants, max_participants: data.maxParticipants };
+    const sbData = { company_id: data.companyId || null, title: data.title, description: data.description, type: data.type, duration: data.duration, instructor: data.instructor, date: data.date, expires_at: data.expiresAt, status: data.status, participants: data.participants, max_participants: data.maxParticipants };
     return insertFallback('trainings', K.trainings, sbData, mt, localItem);
   },
   async updateTraining(id: string, updates: Partial<StoredTraining>): Promise<StoredTraining | null> {
@@ -470,7 +470,7 @@ export const db = {
   },
   async createEPI(data: Omit<StoredEPI, 'id'>): Promise<StoredEPI> {
     const localItem: StoredEPI = { ...data, id: gid() };
-    const sbData = { company_id: data.companyId, employee_id: data.employeeId, employee_name: data.employeeName, name: data.name, ca: data.ca, quantity: data.quantity, delivery_date: data.deliveryDate, expires_at: data.expiresAt, status: data.status };
+    const sbData = { company_id: data.companyId || null, employee_id: data.employeeId, employee_name: data.employeeName, name: data.name, ca: data.ca, quantity: data.quantity, delivery_date: data.deliveryDate, expires_at: data.expiresAt, status: data.status };
     return insertFallback('epis', K.epis, sbData, mepi, localItem);
   },
   async updateEPI(id: string, updates: Partial<StoredEPI>): Promise<StoredEPI | null> {
@@ -504,7 +504,7 @@ export const db = {
   },
   async createCheckin(data: Omit<StoredCheckin, 'id' | 'createdAt'>): Promise<StoredCheckin> {
     const localItem: StoredCheckin = { ...data, id: gid(), createdAt: new Date().toISOString() };
-    const sbData = { company_id: data.companyId, employee_id: data.employeeId, employee_name: data.employeeName, date: data.date, time: data.time, responses: data.responses as any, status: data.status, alert_count: data.alertCount };
+    const sbData = { company_id: data.companyId || null, employee_id: data.employeeId, employee_name: data.employeeName, date: data.date, time: data.time, responses: data.responses as any, status: data.status, alert_count: data.alertCount };
     return insertFallback('daily_checkins', K.checkins, sbData, mck, localItem);
   },
 

@@ -108,19 +108,42 @@ export default function CadastroConvite() {
     setFacePhoto(photo);
   };
 
+  const compressPhoto = (photo: string, maxKB = 200): string => {
+    try {
+      const canvas = document.createElement('canvas');
+      const img = new Image();
+      img.src = photo;
+      canvas.width = 300;
+      canvas.height = 400;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return photo;
+      ctx.drawImage(img, 0, 0, 300, 400);
+      let quality = 0.5;
+      let result = canvas.toDataURL('image/jpeg', quality);
+      while (result.length > maxKB * 1024 && quality > 0.1) {
+        quality -= 0.1;
+        result = canvas.toDataURL('image/jpeg', quality);
+      }
+      return result;
+    } catch {
+      return photo;
+    }
+  };
+
   const handleFinalSubmit = async () => {
     if (!invite || !facePhoto) return;
     setIsSubmitting(true);
     setErrorMsg('');
 
     try {
-      // 1. Criar usuário
+      const smallPhoto = compressPhoto(facePhoto);
+
       const result = await db.createUser({
         email: formData.email,
         password,
         name: formData.name,
         role: 'colaborador',
-        avatar: facePhoto || formData.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase(),
+        avatar: smallPhoto || formData.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase(),
         companyId: invite.companyId,
         companyName: '',
         isActive: true,
@@ -135,7 +158,6 @@ export default function CadastroConvite() {
 
       const userId = result.user?.id || null;
 
-      // 2. Criar funcionário
       await db.createEmployee({
         companyId: invite.companyId,
         userId,
@@ -150,10 +172,9 @@ export default function CadastroConvite() {
         isActive: true,
       });
 
-      // 3. Atualizar convite com foto biométrica
       await db.updateInvite(invite.id, {
         status: 'accepted',
-        facePhoto,
+        facePhoto: smallPhoto,
         faceVerified: true,
         faceCapturedAt: new Date().toISOString(),
         acceptedAt: new Date().toISOString(),

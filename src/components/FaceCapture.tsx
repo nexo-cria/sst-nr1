@@ -64,7 +64,7 @@ export default function FaceCapture({ onCapture, onCancel }: FaceCaptureProps) {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const maxSize = 800;
+        const maxSize = 640;
         let w = img.width;
         let h = img.height;
         if (w > maxSize || h > maxSize) {
@@ -76,7 +76,7 @@ export default function FaceCapture({ onCapture, onCancel }: FaceCaptureProps) {
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
         ctx.drawImage(img, 0, 0, w, h);
-        const photo = canvas.toDataURL('image/jpeg', 0.85);
+        const photo = canvas.toDataURL('image/jpeg', 0.7);
         setCapturedPhoto(photo);
       };
       img.src = ev.target?.result as string;
@@ -88,15 +88,17 @@ export default function FaceCapture({ onCapture, onCancel }: FaceCaptureProps) {
     if (!videoRef.current || !canvasRef.current) return;
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    const maxW = 640;
+    const ratio = Math.min(maxW / video.videoWidth, maxW / video.videoHeight, 1);
+    canvas.width = video.videoWidth * ratio;
+    canvas.height = video.videoHeight * ratio;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.translate(canvas.width, 0);
     ctx.scale(-1, 1);
-    ctx.drawImage(video, 0, 0);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    const photo = canvas.toDataURL('image/jpeg', 0.85);
+    const photo = canvas.toDataURL('image/jpeg', 0.7);
     setCapturedPhoto(photo);
     stream?.getTracks().forEach(t => t.stop());
   }, [stream]);

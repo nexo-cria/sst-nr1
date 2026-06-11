@@ -553,9 +553,16 @@ export const db = {
   async getInviteByToken(token: string): Promise<StoredInvite | null> {
     if (isSB()) {
       try {
-        const { data, error } = await supabase.from('invites').select('*').eq('token', token).single();
-        if (error) console.error('[Supabase getInviteByToken] error:', error.message);
-        if (data) return mi(data);
+        console.log('[getInviteByToken] querying Supabase for token:', token);
+        const { data, error } = await supabase.from('invites').select('*').eq('token', token).maybeSingle();
+        if (error) {
+          console.error('[getInviteByToken] Supabase error:', error.message, error.details, error.hint);
+        }
+        if (data) {
+          console.log('[getInviteByToken] found invite:', data.id, data.name);
+          return mi(data);
+        }
+        console.log('[getInviteByToken] no invite found in Supabase for token:', token);
       } catch (e) { console.error('[getInviteByToken] exception:', e); }
     }
     return (lGet<StoredInvite[]>(K.invites) || []).find(i => i.token === token) || null;

@@ -138,6 +138,8 @@ export default function CadastroConvite() {
     try {
       const smallPhoto = compressPhoto(facePhoto);
 
+      alert('[1/3] Enviando cadastro para o servidor...');
+
       const result = await db.registerFromInvite({
         inviteId: invite.id,
         email: formData.email,
@@ -155,13 +157,16 @@ export default function CadastroConvite() {
       });
 
       if (!result.success) {
+        alert('[ERRO] ' + (result.error || 'Erro desconhecido'));
         setErrorMsg(result.error || 'Erro ao realizar cadastro. Tente novamente.');
         setIsSubmitting(false);
         return;
       }
 
+      alert('[OK] Cadastro salvo com sucesso no servidor!');
       setStep('success');
     } catch (err: any) {
+      alert('[EXCEÇÃO] ' + (err?.message || 'Erro desconhecido'));
       setErrorMsg(err?.message || 'Erro ao realizar cadastro. Tente novamente.');
     }
 

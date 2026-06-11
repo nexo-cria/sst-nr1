@@ -573,6 +573,7 @@ export const db = {
     const sbData = {
       company_id: data.companyId || null, created_by: data.createdBy || null, name: data.name, email: data.email,
       cpf: data.cpf, role: data.role, department: data.department, admission_date: data.admissionDate || null,
+      birth_date: data.birthDate || null, phone: data.phone || '',
       token: data.token, status: data.status, face_photo: data.facePhoto, face_verified: data.faceVerified,
       face_captured_at: data.faceCapturedAt || null, accepted_at: data.acceptedAt || null, expires_at: data.expiresAt,
     };
@@ -583,6 +584,7 @@ export const db = {
         const { data: inserted, error } = await supabase.from('invites').insert(sbData).select().single();
         if (error) {
           console.error('[createInvite] Supabase INSERT error:', error.message, error.details, error.hint);
+          alert('[ERRO SUPABASE] ' + error.message + '\n' + (error.details || '') + '\n' + (error.hint || ''));
           throw new Error('Erro ao salvar convite no servidor: ' + error.message);
         }
         if (inserted) {
@@ -597,6 +599,8 @@ export const db = {
         console.error('[createInvite] Supabase exception:', e);
         throw e;
       }
+    } else {
+      alert('[MODO OFFLINE] Supabase não configurado. Dados salvos localmente.');
     }
 
     console.warn('[createInvite] FALLBACK to localStorage');
